@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Sistema Campanha FIX LOGIN</title>
+<title>Sistema Estável Campanha</title>
 
 <style>
 body{
@@ -12,11 +12,7 @@ body{
   color:white;
 }
 
-.container{
-  max-width:800px;
-  margin:auto;
-  padding:20px;
-}
+.container{max-width:800px;margin:auto;padding:20px;}
 
 .card{
   background:#1e293b;
@@ -25,18 +21,20 @@ body{
   border-radius:10px;
 }
 
-input{
-  padding:10px;
-  margin:5px;
-}
+input{padding:10px;margin:5px;}
 
 button{
   padding:10px;
+  background:#38bdf8;
   border:none;
   border-radius:8px;
-  background:#38bdf8;
-  cursor:pointer;
   font-weight:bold;
+  cursor:pointer;
+}
+
+pre{
+  background:#0b1220;
+  padding:10px;
 }
 </style>
 </head>
@@ -45,25 +43,22 @@ button{
 
 <div class="container">
 
-<h2>🗳️ Sistema Eleitoral - LOGIN FIXADO</h2>
+<h2>🗳️ Sistema Estável (SEM QUEBRAR)</h2>
 
-<!-- LOGIN -->
 <div class="card">
-<h3>Login</h3>
+<h3>Login fixo</h3>
 
-<input id="user" placeholder="usuário">
-<input id="pass" placeholder="senha">
-
+<input id="user" placeholder="user">
+<input id="pass" placeholder="pass">
 <button onclick="login()">Entrar</button>
 
 <p id="status">DESLOGADO</p>
 </div>
 
-<!-- TESTE APÓS LOGIN -->
 <div class="card">
-<h3>Teste CRM</h3>
+<h3>CRM</h3>
 
-<input id="name" placeholder="nome eleitor">
+<input id="name" placeholder="nome">
 <input id="score" placeholder="score 0-1">
 
 <button onclick="add()">Adicionar</button>
@@ -76,57 +71,52 @@ button{
 <script>
 
 // =====================
-// BANCO LOCAL
+// BANCO ESTÁVEL
 // =====================
-const DB = {
-  users: [{ u: "admin", p: "123" }],
-  voters: []
+let DB = {
+  users:[{u:"admin",p:"123"}],
+  voters:[]
 };
 
 let logged = false;
 
 // =====================
-// LOGIN 100% FIXO
+// LOGIN ESTÁVEL
 // =====================
 function login(){
 
-  const user = document.getElementById("user").value.trim();
-  const pass = document.getElementById("pass").value.trim();
+  const u = document.getElementById("user").value;
+  const p = document.getElementById("pass").value;
 
-  const found = DB.users.find(u => u.u === user && u.p === pass);
+  const ok = DB.users.find(x => x.u === u && x.p === p);
 
   const status = document.getElementById("status");
 
-  if(found){
+  if(ok){
     logged = true;
     status.innerText = "LOGADO ✔";
     status.style.color = "lime";
   } else {
     logged = false;
-    status.innerText = "ERRO ❌ (admin / 123)";
+    status.innerText = "ERRO ❌";
     status.style.color = "red";
   }
 }
 
 // =====================
-// ADD ELEITOR
+// ADD CRM
 // =====================
 function add(){
 
   if(!logged){
-    alert("Faça login primeiro (admin / 123)");
+    alert("faça login primeiro");
     return;
   }
 
-  const name = document.getElementById("name").value.trim();
-  const score = parseFloat(document.getElementById("score").value);
+  const name = document.getElementById("name").value;
+  const score = Number(document.getElementById("score").value);
 
-  if(!name || isNaN(score)){
-    alert("Dados inválidos");
-    return;
-  }
-
-  DB.voters.push({ name, score });
+  DB.voters.push({name,score});
 
   render();
 }
@@ -136,15 +126,13 @@ function add(){
 // =====================
 function render(){
 
-  const out = document.getElementById("out");
-
   const total = DB.voters.length;
 
-  const avg = total > 0
+  const avg = total
     ? DB.voters.reduce((a,b)=>a+b.score,0)/total
     : 0;
 
-  out.innerText =
+  document.getElementById("out").innerText =
 `Eleitores: ${total}
 Média: ${avg.toFixed(2)}`;
 }
