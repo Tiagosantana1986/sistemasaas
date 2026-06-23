@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>SaaS Eleitoral v4.1</title>
+
+<style>
+body { font-family: Arial; margin:0; background:#0f172a; color:white; }
+header { padding:15px; background:#111827; }
+.container { padding:20px; }
+.card { background:#1e293b; padding:15px; margin:10px 0; border-radius:8px; }
+button { padding:10px; margin:5px; cursor:pointer; }
+input { padding:8px; margin:5px; width:200px; }
+.row { display:flex; gap:10px; flex-wrap:wrap; }
+</style>
+</head>
+
+<body>
+
+<header>
+<h2>SaaS Eleitoral v4.1 (Monólito Completo)</h2>
+</header>
+
+<div class="container">
+
+<!-- LOGIN SIMPLES -->
+<div class="card">
+<h3>Login</h3>
+<input id="user" placeholder="usuário">
+<input id="pass" placeholder="senha">
+<button onclick="login()">Entrar</button>
+<p id="loginStatus"></p>
+</div>
+
+<!-- DASHBOARD -->
+<div class="card">
+<h3>Dashboard</h3>
+<p id="dash"></p>
+<button onclick="renderDashboard()">Atualizar</button>
+</div>
+
+<!-- CRM -->
+<div class="card">
+<h3>CRM Eleitores</h3>
+<input id="name" placeholder="Nome">
+<input id="score" placeholder="Score (0-1)">
+<button onclick="addVoter()">Adicionar eleitor</button>
+<p id="crm"></p>
+</div>
+
+<!-- AUTONOMIA -->
+<div class="card">
+<h3>Inteligência Autônoma</h3>
+<button onclick="runAI()">Rodar Sistema</button>
+<pre id="ai"></pre>
+</div>
+
+</div>
+
+<script>
+
+// ======================
+// BANCO LOCAL SIMULADO
+// ======================
+let DB = JSON.parse(localStorage.getItem("DB")) || {
+  users: [{ u: "admin", p: "123" }],
+  voters: [],
+  logs: []
+};
+
+let session = false;
+
+// ======================
+// LOGIN
+// ======================
+function login() {
+  const u = document.getElementById("user").value;
+  const p = document.getElementById("pass").value;
+
+  const ok = DB.users.find(x => x.u === u && x.p === p);
+
+  if (ok) {
+    session = true;
+    document.getElementById("loginStatus").innerText = "LOGADO";
+  } else {
+    document.getElementById("loginStatus").innerText = "ERRO";
+  }
+}
+
+// ======================
+// SALVAR DB
+// ======================
+function save() {
+  localStorage.setItem("DB", JSON.stringify(DB));
+}
+
+// ======================
+// CRM
+// ======================
+function addVoter() {
+  if (!session) return alert("login necessário");
+
+  const name = document.getElementById("name").value;
+  const score = parseFloat(document.getElementById("score").value);
+
+  DB.voters.push({ name, score });
+  save();
+
+  document.getElementById("crm").innerText =
+    JSON.stringify(DB.voters, null, 2);
+}
+
+// ======================
+// DASHBOARD
+// ======================
+function renderDashboard() {
+  const total = DB.voters.length;
+  const avg = total
+    ? DB.voters.reduce((a,b)=>a+b.score,0)/total
+    : 0;
+
+  document.getElementById("dash").innerText =
+    `Eleitores: ${total} | Engajamento: ${avg.toFixed(2)}`;
+}
+
+// ======================
+// POLICY ENGINE
+// ======================
+function policy(action){
+  const blocked = ["DELETE_DB"];
+  return !blocked.includes(action);
+}
+
+// ======================
+// AUTONOMY BRAIN
+// ======================
+function brain(){
+  const avg = DB.voters.length
+    ? DB.voters.reduce((a,b)=>a+b.score,0)/DB.voters.length
+    : 0;
+
+  if(avg < 0.5){
+    return {
+      action: "CREATE_TASK",
+      reason: "Engajamento baixo detectado"
+    };
+  }
+
+  return { action: "NO_ACTION" };
+}
+
+// ======================
+// EXECUTION ENGINE
+// ======================
+function execute(decision){
+  if(!policy(decision.action)) return "BLOCKED";
+
+  if(decision.action === "CREATE_TASK"){
+    DB.logs.push({ msg: decision.reason, date: new Date() });
+    save();
+    return "TASK CREATED";
+  }
+
+  return "IDLE";
+}
+
+// ======================
+// FEEDBACK LOOP
+// ======================
+function feedback(result){
+  return {
+    learned: true,
+    result
+  };
+}
+
+// ======================
+// PIPELINE IA
+// ======================
+function runAI(){
+  const d = brain();
+  const r = execute(d);
+  const f = feedback(r);
+
+  document.getElementById("ai").innerText =
+    JSON.stringify({ decision: d, result: r, feedback: f }, null, 2);
+}
+
+</script>
+
+</body>
+</html># sistemasaas
