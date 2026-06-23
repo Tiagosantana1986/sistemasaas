@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Sistema Funcional</title>
+<title>Sistema Campanha Completo</title>
 
 <style>
 body{
@@ -13,7 +13,7 @@ body{
 }
 
 .container{
-  max-width:800px;
+  max-width:900px;
   margin:auto;
   padding:20px;
 }
@@ -50,7 +50,7 @@ pre{
 
 <div class="container">
 
-<h2>🗳️ Sistema Funcional de Campanha</h2>
+<h2>🗳️ Sistema de Campanha Completo</h2>
 
 <!-- LOGIN -->
 <div class="card">
@@ -63,86 +63,140 @@ pre{
 
 <!-- CRM -->
 <div class="card">
-<h3>CRM</h3>
-<input id="name" placeholder="nome eleitor">
-<input id="score" placeholder="score 0-1">
-<button onclick="add()">Adicionar eleitor</button>
+<h3>CRM Eleitores</h3>
+<input id="vname" placeholder="nome">
+<input id="vscore" placeholder="score 0-1">
+<button onclick="addVoter()">Adicionar</button>
 </div>
 
-<!-- DASH -->
+<!-- LIDERANÇAS -->
+<div class="card">
+<h3>Lideranças</h3>
+<input id="lname" placeholder="nome">
+<button onclick="addLeader()">Adicionar</button>
+</div>
+
+<!-- EVENTOS -->
+<div class="card">
+<h3>Eventos</h3>
+<input id="ename" placeholder="evento">
+<button onclick="addEvent()">Adicionar</button>
+</div>
+
+<!-- FINANCEIRO -->
+<div class="card">
+<h3>Financeiro</h3>
+<input id="fvalue" placeholder="valor gasto">
+<button onclick="addFinance()">Adicionar</button>
+</div>
+
+<!-- DASHBOARD -->
 <div class="card">
 <h3>Dashboard</h3>
-<button onclick="render()">Atualizar</button>
-<pre id="out"></pre>
+<button onclick="dashboard()">Atualizar</button>
+<pre id="dash"></pre>
+</div>
+
+<!-- INTELIGÊNCIA -->
+<div class="card">
+<h3>Inteligência Eleitoral</h3>
+<button onclick="ai()">Rodar análise</button>
+<pre id="ai"></pre>
 </div>
 
 </div>
 
 <script>
 
-// banco simples e estável
-const DB = {
+let DB = JSON.parse(localStorage.getItem("DB")) || {
   users:[{u:"admin",p:"123"}],
-  voters:[]
+  voters:[],
+  leaders:[],
+  events:[],
+  finance:[]
 };
 
-let logged = false;
+let logged=false;
 
-// LOGIN FUNCIONAL
+function save(){
+  localStorage.setItem("DB",JSON.stringify(DB));
+}
+
+// LOGIN
 function login(){
+  const u=document.getElementById("user").value;
+  const p=document.getElementById("pass").value;
 
-  const u = document.getElementById("user").value;
-  const p = document.getElementById("pass").value;
-
-  const ok = DB.users.find(x => x.u === u && x.p === p);
-
-  const status = document.getElementById("status");
+  const ok=DB.users.find(x=>x.u===u&&x.p===p);
 
   if(ok){
-    logged = true;
-    status.innerText = "LOGADO ✔";
-    status.style.color = "lime";
-  } else {
-    logged = false;
-    status.innerText = "ERRO ❌";
-    status.style.color = "red";
+    logged=true;
+    status.innerText="LOGADO ✔";
+  }else{
+    status.innerText="ERRO ❌";
   }
 }
 
-// ADD ELEITOR
-function add(){
+// CRM
+function addVoter(){
+  if(!logged)return alert("login necessário");
 
-  if(!logged){
-    alert("Faça login primeiro (admin / 123)");
-    return;
-  }
+  DB.voters.push({
+    name:vname.value,
+    score:Number(vscore.value)
+  });
 
-  const name = document.getElementById("name").value;
-  const score = Number(document.getElementById("score").value);
+  save();
+}
 
-  if(!name || isNaN(score)){
-    alert("dados inválidos");
-    return;
-  }
+// LIDERANÇAS
+function addLeader(){
+  if(!logged)return;
+  DB.leaders.push({name:lname.value});
+  save();
+}
 
-  DB.voters.push({name,score});
+// EVENTOS
+function addEvent(){
+  if(!logged)return;
+  DB.events.push({name:ename.value});
+  save();
+}
 
-  document.getElementById("name").value="";
-  document.getElementById("score").value="";
+// FINANCEIRO
+function addFinance(){
+  if(!logged)return;
+  DB.finance.push({value:Number(fvalue.value)});
+  save();
 }
 
 // DASHBOARD
-function render(){
+function dashboard(){
 
-  const total = DB.voters.length;
+  const total=DB.voters.length;
+  const avg=total?DB.voters.reduce((a,b)=>a+b.score,0)/total:0;
+  const money=DB.finance.reduce((a,b)=>a+b.value,0);
 
-  const avg = total
-    ? DB.voters.reduce((a,b)=>a+b.score,0)/total
-    : 0;
+  dash.innerText=
+`Eleitores: ${total}
+Engajamento: ${avg.toFixed(2)}
+Lideranças: ${DB.leaders.length}
+Eventos: ${DB.events.length}
+Gastos: R$ ${money.toFixed(2)}`;
+}
 
-  document.getElementById("out").innerText =
-`Total eleitores: ${total}
-Média de apoio: ${avg.toFixed(2)}`;
+// IA
+function ai(){
+
+  const avg=DB.voters.length?DB.voters.reduce((a,b)=>a+b.score,0)/DB.voters.length:0;
+
+  let msg="";
+
+  if(avg<0.4) msg="⚠ campanha fraca";
+  else if(avg<0.7) msg="📊 campanha média";
+  else msg="🔥 campanha forte";
+
+  ai.innerText=msg;
 }
 
 </script>
