@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Sistema Estável Campanha</title>
+<title>Sistema Funcional</title>
 
 <style>
 body{
@@ -12,7 +12,11 @@ body{
   color:white;
 }
 
-.container{max-width:800px;margin:auto;padding:20px;}
+.container{
+  max-width:800px;
+  margin:auto;
+  padding:20px;
+}
 
 .card{
   background:#1e293b;
@@ -21,13 +25,16 @@ body{
   border-radius:10px;
 }
 
-input{padding:10px;margin:5px;}
+input{
+  padding:10px;
+  margin:5px;
+}
 
 button{
   padding:10px;
-  background:#38bdf8;
   border:none;
   border-radius:8px;
+  background:#38bdf8;
   font-weight:bold;
   cursor:pointer;
 }
@@ -43,26 +50,29 @@ pre{
 
 <div class="container">
 
-<h2>🗳️ Sistema Estável (SEM QUEBRAR)</h2>
+<h2>🗳️ Sistema Funcional de Campanha</h2>
 
+<!-- LOGIN -->
 <div class="card">
-<h3>Login fixo</h3>
-
+<h3>Login</h3>
 <input id="user" placeholder="user">
 <input id="pass" placeholder="pass">
 <button onclick="login()">Entrar</button>
-
-<p id="status">DESLOGADO</p>
+<p id="status">deslogado</p>
 </div>
 
+<!-- CRM -->
 <div class="card">
 <h3>CRM</h3>
-
-<input id="name" placeholder="nome">
+<input id="name" placeholder="nome eleitor">
 <input id="score" placeholder="score 0-1">
+<button onclick="add()">Adicionar eleitor</button>
+</div>
 
-<button onclick="add()">Adicionar</button>
-
+<!-- DASH -->
+<div class="card">
+<h3>Dashboard</h3>
+<button onclick="render()">Atualizar</button>
 <pre id="out"></pre>
 </div>
 
@@ -70,19 +80,15 @@ pre{
 
 <script>
 
-// =====================
-// BANCO ESTÁVEL
-// =====================
-let DB = {
+// banco simples e estável
+const DB = {
   users:[{u:"admin",p:"123"}],
   voters:[]
 };
 
 let logged = false;
 
-// =====================
-// LOGIN ESTÁVEL
-// =====================
+// LOGIN FUNCIONAL
 function login(){
 
   const u = document.getElementById("user").value;
@@ -103,27 +109,29 @@ function login(){
   }
 }
 
-// =====================
-// ADD CRM
-// =====================
+// ADD ELEITOR
 function add(){
 
   if(!logged){
-    alert("faça login primeiro");
+    alert("Faça login primeiro (admin / 123)");
     return;
   }
 
   const name = document.getElementById("name").value;
   const score = Number(document.getElementById("score").value);
 
+  if(!name || isNaN(score)){
+    alert("dados inválidos");
+    return;
+  }
+
   DB.voters.push({name,score});
 
-  render();
+  document.getElementById("name").value="";
+  document.getElementById("score").value="";
 }
 
-// =====================
-// RENDER
-// =====================
+// DASHBOARD
 function render(){
 
   const total = DB.voters.length;
@@ -133,8 +141,8 @@ function render(){
     : 0;
 
   document.getElementById("out").innerText =
-`Eleitores: ${total}
-Média: ${avg.toFixed(2)}`;
+`Total eleitores: ${total}
+Média de apoio: ${avg.toFixed(2)}`;
 }
 
 </script>
