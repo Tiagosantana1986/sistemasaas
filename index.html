@@ -2,15 +2,72 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Sistema Campanha Eleitoral</title>
+<title>Campanha Eleitoral Pro</title>
 
 <style>
-body { font-family: Arial; background:#0f172a; color:white; margin:0; }
-.container { padding:20px; }
-.card { background:#1e293b; padding:15px; margin:10px 0; border-radius:8px; }
-input { padding:8px; margin:5px; }
-button { padding:10px; margin:5px; cursor:pointer; }
-pre { background:#111827; padding:10px; }
+body {
+  margin:0;
+  font-family: Arial;
+  background: linear-gradient(135deg,#0f172a,#1e293b);
+  color:white;
+}
+
+.container {
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+.card {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  border-radius:12px;
+  padding:15px;
+  margin:10px 0;
+  box-shadow:0 10px 20px rgba(0,0,0,0.3);
+  transition:0.3s;
+}
+
+.card:hover {
+  transform: scale(1.02);
+}
+
+input {
+  padding:10px;
+  margin:5px;
+  border-radius:8px;
+  border:none;
+  outline:none;
+}
+
+button {
+  padding:10px 15px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  background:#38bdf8;
+  color:black;
+  font-weight:bold;
+  transition:0.3s;
+}
+
+button:hover {
+  background:#0ea5e9;
+  transform: scale(1.05);
+}
+
+h2 { text-align:center; }
+
+.status {
+  text-align:center;
+  font-weight:bold;
+}
+
+pre {
+  background:#0b1220;
+  padding:10px;
+  border-radius:8px;
+}
 </style>
 </head>
 
@@ -18,7 +75,7 @@ pre { background:#111827; padding:10px; }
 
 <div class="container">
 
-<h2>Sistema Eleitoral Completo (Single File)</h2>
+<h2>🗳️ Sistema de Campanha Eleitoral</h2>
 
 <!-- LOGIN -->
 <div class="card">
@@ -26,30 +83,15 @@ pre { background:#111827; padding:10px; }
 <input id="user" placeholder="usuário">
 <input id="pass" placeholder="senha">
 <button onclick="login()">Entrar</button>
-<p id="status"></p>
+<p class="status" id="status">deslogado</p>
 </div>
 
 <!-- CRM -->
 <div class="card">
 <h3>CRM Eleitores</h3>
 <input id="name" placeholder="nome">
-<input id="score" placeholder="score (0-1)">
+<input id="score" placeholder="score 0-1">
 <button onclick="addVoter()">Adicionar</button>
-</div>
-
-<!-- LIDERANÇAS -->
-<div class="card">
-<h3>Lideranças</h3>
-<input id="lname" placeholder="nome">
-<input id="region" placeholder="região">
-<button onclick="addLeader()">Adicionar</button>
-</div>
-
-<!-- EVENTOS -->
-<div class="card">
-<h3>Eventos</h3>
-<input id="ename" placeholder="evento">
-<button onclick="addEvent()">Adicionar</button>
 </div>
 
 <!-- DASHBOARD -->
@@ -61,8 +103,8 @@ pre { background:#111827; padding:10px; }
 
 <!-- IA -->
 <div class="card">
-<h3>Inteligência Eleitoral</h3>
-<button onclick="runAI()">Rodar Análise</button>
+<h3>Inteligência</h3>
+<button onclick="ai()">Analisar</button>
 <pre id="ai"></pre>
 </div>
 
@@ -70,121 +112,96 @@ pre { background:#111827; padding:10px; }
 
 <script>
 
-// ========================
-// BANCO LOCAL REAL
-// ========================
+// =====================
+// BANCO LOCAL
+// =====================
 let DB = JSON.parse(localStorage.getItem("DB")) || {
-  users: [{ u: "admin", p: "123" }],
-  voters: [],
-  leaders: [],
-  events: []
+  users:[{u:"admin",p:"123"}],
+  voters:[]
 };
 
 let logged = false;
 
 function save(){
-  localStorage.setItem("DB", JSON.stringify(DB));
+  localStorage.setItem("DB",JSON.stringify(DB));
 }
 
-// ========================
-// LOGIN
-// ========================
+// =====================
+// LOGIN (CORRIGIDO)
+// =====================
 function login(){
-  const u = user.value;
-  const p = pass.value;
+
+  const u = document.getElementById("user").value;
+  const p = document.getElementById("pass").value;
 
   const ok = DB.users.find(x => x.u === u && x.p === p);
 
   if(ok){
     logged = true;
-    status.innerText = "LOGADO";
+    document.getElementById("status").innerText = "LOGADO ✔";
+    document.getElementById("status").style.color = "#22c55e";
   } else {
-    status.innerText = "ERRO";
+    document.getElementById("status").innerText = "ERRO ❌";
+    document.getElementById("status").style.color = "#ef4444";
   }
 }
 
-// ========================
+// =====================
 // CRM
-// ========================
+// =====================
 function addVoter(){
-  if(!logged) return alert("login necessário");
 
-  DB.voters.push({
-    name: name.value,
-    score: parseFloat(score.value)
-  });
+  if(!logged){
+    alert("faça login primeiro");
+    return;
+  }
 
+  const name = document.getElementById("name").value;
+  const score = parseFloat(document.getElementById("score").value);
+
+  DB.voters.push({name,score});
   save();
+
+  document.getElementById("name").value="";
+  document.getElementById("score").value="";
 }
 
-// ========================
-// LIDERANÇAS
-// ========================
-function addLeader(){
-  if(!logged) return;
-
-  DB.leaders.push({
-    name: lname.value,
-    region: region.value
-  });
-
-  save();
-}
-
-// ========================
-// EVENTOS
-// ========================
-function addEvent(){
-  if(!logged) return;
-
-  DB.events.push({
-    name: ename.value
-  });
-
-  save();
-}
-
-// ========================
-// DASHBOARD REAL
-// ========================
+// =====================
+// DASHBOARD
+// =====================
 function dashboard(){
+
   const total = DB.voters.length;
 
   const avg = total
     ? DB.voters.reduce((a,b)=>a+b.score,0)/total
     : 0;
 
-  const leaders = DB.leaders.length;
-  const events = DB.events.length;
-
-  out.innerText = JSON.stringify({
-    eleitores: total,
-    engajamento: avg.toFixed(2),
-    liderancas: leaders,
-    eventos: events
-  }, null, 2);
+  document.getElementById("out").innerText =
+  `Eleitores: ${total}
+Engajamento: ${avg.toFixed(2)}`;
 }
 
-// ========================
-// INTELIGÊNCIA
-// ========================
-function runAI(){
+// =====================
+// IA SIMPLES
+// =====================
+function ai(){
 
   const avg = DB.voters.length
     ? DB.voters.reduce((a,b)=>a+b.score,0)/DB.voters.length
     : 0;
 
-  let status = "";
+  let msg = "";
 
   if(avg < 0.4){
-    status = "Campanha fraca — aumentar ações de rua";
+    msg = "⚠ Campanha fraca - aumentar presença de rua";
   } else if(avg < 0.7){
-    status = "Campanha média — precisa reforçar liderança";
+    msg = "📊 Campanha média - reforçar lideranças";
   } else {
-    status = "Campanha forte — manter estratégia";
+    msg = "🔥 Campanha forte - manter estratégia";
   }
 
-  ai.innerText = status;
+  document.getElementById("ai").innerText = msg;
 }
 
 </script>
