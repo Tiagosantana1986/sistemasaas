@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Campanha SaaS - FIX</title>
+<title>Sistema Campanha FIX</title>
 
 <style>
 body{
@@ -32,11 +32,16 @@ input{
 
 button{
   padding:10px;
-  cursor:pointer;
   background:#38bdf8;
   border:none;
   border-radius:8px;
   font-weight:bold;
+  cursor:pointer;
+}
+
+pre{
+  background:#0b1220;
+  padding:10px;
 }
 </style>
 </head>
@@ -52,91 +57,102 @@ button{
 <h3>Login</h3>
 <input id="user" placeholder="user">
 <input id="pass" placeholder="pass">
-<button onclick="login()">Entrar</button>
+<button onclick="doLogin()">Entrar</button>
 <p id="status">deslogado</p>
 </div>
 
 <!-- CRM -->
 <div class="card">
-<h3>CRM</h3>
-<input id="name" placeholder="nome">
-<input id="score" placeholder="score (0-1)">
-<button onclick="add()">Adicionar eleitor</button>
+<h3>CRM Eleitores</h3>
+<input id="vname" placeholder="nome">
+<input id="vscore" placeholder="score 0-1">
+<button onclick="addVoter()">Adicionar</button>
 </div>
 
 <!-- DASHBOARD -->
 <div class="card">
 <h3>Dashboard</h3>
-<button onclick="dash()">Atualizar</button>
-<pre id="out"></pre>
+<button onclick="updateDashboard()">Atualizar</button>
+<pre id="output"></pre>
 </div>
 
 </div>
 
 <script>
 
-// =====================
-// DB LOCAL
-// =====================
+// ======================
+// BANCO LOCAL
+// ======================
 let DB = JSON.parse(localStorage.getItem("DB")) || {
   users:[{u:"admin",p:"123"}],
   voters:[]
 };
 
-let logged=false;
+let logged = false;
 
 function save(){
-  localStorage.setItem("DB",JSON.stringify(DB));
+  localStorage.setItem("DB", JSON.stringify(DB));
 }
 
-// =====================
-// LOGIN (FIXED)
-// =====================
-function login(){
+// ======================
+// LOGIN (CORRIGIDO)
+function doLogin(){
 
-  const u=document.getElementById("user").value;
-  const p=document.getElementById("pass").value;
+  const u = document.getElementById("user").value;
+  const p = document.getElementById("pass").value;
 
-  const ok=DB.users.find(x=>x.u===u && x.p===p);
+  const userFound = DB.users.find(x => x.u === u && x.p === p);
 
-  if(ok){
-    logged=true;
-    document.getElementById("status").innerText="LOGADO ✔";
-  }else{
-    document.getElementById("status").innerText="ERRO ❌";
+  if(userFound){
+    logged = true;
+    document.getElementById("status").innerText = "LOGADO ✔";
+  } else {
+    logged = false;
+    document.getElementById("status").innerText = "ERRO ❌";
   }
 }
 
-// =====================
-// ADD CRM
-// =====================
-function add(){
+// ======================
+// ADD VOTER
+// ======================
+function addVoter(){
 
   if(!logged){
-    alert("faça login primeiro");
+    alert("Faça login primeiro");
     return;
   }
 
-  const name=document.getElementById("name").value;
-  const score=parseFloat(document.getElementById("score").value);
+  const name = document.getElementById("vname").value;
+  const score = Number(document.getElementById("vscore").value);
 
-  DB.voters.push({name,score});
+  if(!name || isNaN(score)){
+    alert("dados inválidos");
+    return;
+  }
+
+  DB.voters.push({name, score});
   save();
+
+  document.getElementById("vname").value = "";
+  document.getElementById("vscore").value = "";
 }
 
-// =====================
+// ======================
 // DASHBOARD
-// =====================
-function dash(){
+// ======================
+function updateDashboard(){
 
-  const total=DB.voters.length;
+  const total = DB.voters.length;
 
-  const avg=total?
-    DB.voters.reduce((a,b)=>a+b.score,0)/total:0;
+  let avg = 0;
 
-  document.getElementById("out").innerText=
-  `Total eleitores: ${total}
-Engajamento: ${avg.toFixed(2)}`;
+  if(total > 0){
+    avg = DB.voters.reduce((s,v)=>s+v.score,0)/total;
+  }
+
+  document.getElementById("output").innerText =
+  `Eleitores: ${total}
+Média de apoio: ${avg.toFixed(2)}`;
 }
 
 </script>
