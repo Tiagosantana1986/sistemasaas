@@ -2,68 +2,52 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Campanha Eleitoral Pro</title>
+<title>Campaign SaaS - Single File</title>
 
 <style>
-body {
+body{
   margin:0;
-  font-family: Arial;
-  background: linear-gradient(135deg,#0f172a,#1e293b);
-  color:white;
+  font-family:Arial;
+  background:linear-gradient(135deg,#0f172a,#1e293b);
+  color:#fff;
 }
 
-.container {
-  max-width:900px;
+.container{
+  max-width:1000px;
   margin:auto;
   padding:20px;
 }
 
-.card {
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(10px);
-  border-radius:12px;
+.card{
+  background:rgba(255,255,255,0.08);
   padding:15px;
   margin:10px 0;
-  box-shadow:0 10px 20px rgba(0,0,0,0.3);
+  border-radius:12px;
+  backdrop-filter:blur(10px);
   transition:0.3s;
 }
 
-.card:hover {
-  transform: scale(1.02);
-}
+.card:hover{transform:scale(1.02)}
 
-input {
+input,select{
   padding:10px;
   margin:5px;
   border-radius:8px;
   border:none;
-  outline:none;
 }
 
-button {
+button{
   padding:10px 15px;
   border:none;
   border-radius:8px;
-  cursor:pointer;
   background:#38bdf8;
-  color:black;
-  font-weight:bold;
-  transition:0.3s;
-}
-
-button:hover {
-  background:#0ea5e9;
-  transform: scale(1.05);
-}
-
-h2 { text-align:center; }
-
-.status {
-  text-align:center;
+  cursor:pointer;
   font-weight:bold;
 }
 
-pre {
+button:hover{background:#0ea5e9}
+
+pre{
   background:#0b1220;
   padding:10px;
   border-radius:8px;
@@ -75,23 +59,44 @@ pre {
 
 <div class="container">
 
-<h2>🗳️ Sistema de Campanha Eleitoral</h2>
+<h2>🗳️ Campaign SaaS (Single File PRO)</h2>
 
 <!-- LOGIN -->
 <div class="card">
 <h3>Login</h3>
-<input id="user" placeholder="usuário">
-<input id="pass" placeholder="senha">
+<input id="user" placeholder="user">
+<input id="pass" placeholder="pass">
 <button onclick="login()">Entrar</button>
-<p class="status" id="status">deslogado</p>
+<p id="status">deslogado</p>
 </div>
 
 <!-- CRM -->
 <div class="card">
 <h3>CRM Eleitores</h3>
-<input id="name" placeholder="nome">
-<input id="score" placeholder="score 0-1">
+<input id="vname" placeholder="nome">
+<input id="vscore" placeholder="score 0-1">
 <button onclick="addVoter()">Adicionar</button>
+</div>
+
+<!-- LIDERANÇAS -->
+<div class="card">
+<h3>Lideranças</h3>
+<input id="lname" placeholder="nome">
+<button onclick="addLeader()">Adicionar</button>
+</div>
+
+<!-- EVENTOS -->
+<div class="card">
+<h3>Eventos</h3>
+<input id="ename" placeholder="evento">
+<button onclick="addEvent()">Adicionar</button>
+</div>
+
+<!-- FINANCEIRO -->
+<div class="card">
+<h3>Financeiro</h3>
+<input id="fin" placeholder="valor">
+<button onclick="addFinance()">Adicionar gasto</button>
 </div>
 
 <!-- DASHBOARD -->
@@ -103,8 +108,8 @@ pre {
 
 <!-- IA -->
 <div class="card">
-<h3>Inteligência</h3>
-<button onclick="ai()">Analisar</button>
+<h3>Inteligência Eleitoral</h3>
+<button onclick="ai()">Rodar IA</button>
 <pre id="ai"></pre>
 </div>
 
@@ -113,36 +118,36 @@ pre {
 <script>
 
 // =====================
-// BANCO LOCAL
+// BANCO LOCAL REAL
 // =====================
 let DB = JSON.parse(localStorage.getItem("DB")) || {
   users:[{u:"admin",p:"123"}],
-  voters:[]
+  voters:[],
+  leaders:[],
+  events:[],
+  finance:[]
 };
 
-let logged = false;
+let logged=false;
 
 function save(){
   localStorage.setItem("DB",JSON.stringify(DB));
 }
 
 // =====================
-// LOGIN (CORRIGIDO)
+// LOGIN
 // =====================
 function login(){
+  const u=document.getElementById("user").value;
+  const p=document.getElementById("pass").value;
 
-  const u = document.getElementById("user").value;
-  const p = document.getElementById("pass").value;
-
-  const ok = DB.users.find(x => x.u === u && x.p === p);
+  const ok=DB.users.find(x=>x.u===u&&x.p===p);
 
   if(ok){
-    logged = true;
-    document.getElementById("status").innerText = "LOGADO ✔";
-    document.getElementById("status").style.color = "#22c55e";
-  } else {
-    document.getElementById("status").innerText = "ERRO ❌";
-    document.getElementById("status").style.color = "#ef4444";
+    logged=true;
+    status.innerText="LOGADO ✔";
+  }else{
+    status.innerText="ERRO ❌";
   }
 }
 
@@ -150,58 +155,95 @@ function login(){
 // CRM
 // =====================
 function addVoter(){
+  if(!logged)return;
 
-  if(!logged){
-    alert("faça login primeiro");
-    return;
-  }
+  DB.voters.push({
+    name:vname.value,
+    score:parseFloat(vscore.value)
+  });
 
-  const name = document.getElementById("name").value;
-  const score = parseFloat(document.getElementById("score").value);
-
-  DB.voters.push({name,score});
   save();
-
-  document.getElementById("name").value="";
-  document.getElementById("score").value="";
 }
 
 // =====================
-// DASHBOARD
+// LIDERANÇAS
+// =====================
+function addLeader(){
+  if(!logged)return;
+
+  DB.leaders.push({name:lname.value});
+  save();
+}
+
+// =====================
+// EVENTOS
+// =====================
+function addEvent(){
+  if(!logged)return;
+
+  DB.events.push({name:ename.value});
+  save();
+}
+
+// =====================
+// FINANCEIRO
+// =====================
+function addFinance(){
+  if(!logged)return;
+
+  DB.finance.push({
+    value:parseFloat(fin.value)
+  });
+
+  save();
+}
+
+// =====================
+// DASHBOARD REAL
 // =====================
 function dashboard(){
 
-  const total = DB.voters.length;
+  const totalVoters=DB.voters.length;
+  const avg=totalVoters?
+    DB.voters.reduce((a,b)=>a+b.score,0)/totalVoters:0;
 
-  const avg = total
-    ? DB.voters.reduce((a,b)=>a+b.score,0)/total
-    : 0;
+  const totalMoney=DB.finance.reduce((a,b)=>a+b.value,0);
 
-  document.getElementById("out").innerText =
-  `Eleitores: ${total}
-Engajamento: ${avg.toFixed(2)}`;
+  out.innerText=`
+Eleitores: ${totalVoters}
+Engajamento: ${avg.toFixed(2)}
+Lideranças: ${DB.leaders.length}
+Eventos: ${DB.events.length}
+Gasto total: R$ ${totalMoney.toFixed(2)}
+`;
 }
 
 // =====================
-// IA SIMPLES
+// IA SIMPLES REAL
 // =====================
 function ai(){
 
-  const avg = DB.voters.length
-    ? DB.voters.reduce((a,b)=>a+b.score,0)/DB.voters.length
-    : 0;
+  const avg=DB.voters.length?
+    DB.voters.reduce((a,b)=>a+b.score,0)/DB.voters.length:0;
 
-  let msg = "";
+  let msg="";
 
-  if(avg < 0.4){
-    msg = "⚠ Campanha fraca - aumentar presença de rua";
-  } else if(avg < 0.7){
-    msg = "📊 Campanha média - reforçar lideranças";
-  } else {
-    msg = "🔥 Campanha forte - manter estratégia";
+  if(avg<0.4){
+    msg="⚠ Campanha fraca - aumentar mobilização";
+  }
+  else if(avg<0.7){
+    msg="📊 Campanha média - reforçar lideranças";
+  }
+  else{
+    msg="🔥 Campanha forte - manter estratégia";
   }
 
-  document.getElementById("ai").innerText = msg;
+  const cost=DB.finance.reduce((a,b)=>a+b.value,0);
+  const efficiency=cost/(DB.voters.length||1);
+
+  msg+=`\nCusto por eleitor: ${efficiency.toFixed(2)}`;
+
+  ai.innerText=msg;
 }
 
 </script>
